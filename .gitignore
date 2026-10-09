@@ -1,0 +1,37 @@
+# Byte-compiled / cached files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Packaging / build
+build/
+dist/
+*.egg-info/
+
+# Environments
+.venv/
+venv/
+/env/
+
+# Run outputs / logs
+runs/
+eval-out/
+eval_results/
+logs/
+wandb/
+*.log
+
+# Model weights
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Upstream benchmark checkouts (evaluation/*/install_env.sh)
+third_party/

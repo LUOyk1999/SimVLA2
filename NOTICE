@@ -1,0 +1,24 @@
+SimVLA 2.0
+
+This repository is licensed under the Apache License 2.0 (see LICENSE). It
+includes or adapts material from the third-party projects below, each of
+which remains under its own license.
+
+-------------------------------------------------------------------------------
+models/transformer.py (Mlp, Attention)
+    Adapted from PyTorch Image Models (timm)
+    https://github.com/huggingface/pytorch-image-models
+    Apache License 2.0
+
+evaluation/calvin/ABC_D/validation/new_playtable_tasks.yaml
+evaluation/calvin/ABC_D/validation/new_playtable_validation.yaml
+    Copied unmodified from CALVIN at commit fa03f01
+    (calvin_models/conf/callbacks/rollout/tasks/new_playtable_tasks.yaml,
+     calvin_models/conf/annotations/new_playtable_validation.yaml)
+    https://github.com/mees/calvin
+    MIT License, Copyright (c) 2021 Oier Mees
+
+evaluation/patches/simplerenv.patch
+    Patch against SimplerEnv; context lines are SimplerEnv source
+    https://github.com/simpler-env/SimplerEnv
+    MIT License, Copyright (c) 2024 simpler-env

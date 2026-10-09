@@ -1,0 +1,189 @@
+--- a/ManiSkill2_real2sim/mani_skill2_real2sim/agents/configs/google_robot/defaults.py
++++ b/ManiSkill2_real2sim/mani_skill2_real2sim/agents/configs/google_robot/defaults.py
+@@ -224,6 +224,17 @@
+             interpolate_planner_jerklim=self.arm_jerk_limit,
+             **arm_common_kwargs,
+         )
++        arm_pd_ee_base_pose_align_interpolate_by_planner = PDEEPoseControllerConfig(
++            *arm_common_args,
++            frame="base",
++            interpolate=True,
++            use_delta=False,
++            interpolate_by_planner=True,
++            interpolate_planner_vlim=self.arm_vel_limit,
++            interpolate_planner_alim=self.arm_acc_limit,
++            interpolate_planner_jerklim=self.arm_jerk_limit,
++            **arm_common_kwargs,
++        )
+         _C["arm"] = dict(
+             arm_pd_ee_delta_pose=arm_pd_ee_delta_pose,
+             arm_pd_ee_delta_pose_align=arm_pd_ee_delta_pose_align,
+@@ -233,6 +244,7 @@
+             arm_pd_ee_target_delta_pose_align=arm_pd_ee_target_delta_pose_align,
+             arm_pd_ee_target_delta_pose_align_interpolate=arm_pd_ee_target_delta_pose_align_interpolate,
+             arm_pd_ee_target_delta_pose_align_interpolate_by_planner=arm_pd_ee_target_delta_pose_align_interpolate_by_planner,
++            arm_pd_ee_base_pose_align_interpolate_by_planner=arm_pd_ee_base_pose_align_interpolate_by_planner,
+         )
+ 
+         # -------------------------------------------------------------------------- #
+--- a/ManiSkill2_real2sim/mani_skill2_real2sim/agents/configs/widowx/defaults.py
++++ b/ManiSkill2_real2sim/mani_skill2_real2sim/agents/configs/widowx/defaults.py
+@@ -131,6 +131,9 @@
+         arm_pd_ee_target_delta_pose_align2 = PDEEPoseControllerConfig(
+             *arm_common_args, frame="ee_align2", use_target=True, **arm_common_kwargs
+         )
++        arm_pd_ee_target_base_pose = PDEEPoseControllerConfig(
++            *arm_common_args, frame="base", use_target=True, use_delta=False, **arm_common_kwargs
++        )
+         arm_pd_ee_target_delta_pose_align2_interpolate_by_planner = PDEEPoseControllerConfig(
+             *arm_common_args,
+             frame="ee_align2",
+@@ -150,6 +153,7 @@
+             arm_pd_ee_target_delta_pose_align=arm_pd_ee_target_delta_pose_align,
+             arm_pd_ee_target_delta_pose_align2=arm_pd_ee_target_delta_pose_align2,
+             arm_pd_ee_target_delta_pose_align2_interpolate_by_planner=arm_pd_ee_target_delta_pose_align2_interpolate_by_planner,
++            arm_pd_ee_target_base_pose=arm_pd_ee_target_base_pose,
+         )
+ 
+         # -------------------------------------------------------------------------- #
+@@ -282,18 +286,14 @@
+     def cameras(self):
+         return [
+             CameraConfig(
+-                uid="3rd_view_camera",  # the camera used for real evaluation for the sink setup
+-                # p=[0.13, 0.27, 1.24],
+-                # q=look_at([0, 0, 0], [-1, -0.45, -1.05], [0, 0, 1]).q,
+-                # actor_uid=None,
+-                p=[-0.00300001, -0.21, 0.39],
+-                q=[-0.907313, 0.0782, -0.36434, -0.194741],
+-                actor_uid="base_link",
++                uid="3rd_view_camera",  # the camera used in the Bridge dataset
++                p=[0.00, -0.16, 0.336],
++                q=[0.909182, -0.0819809, 0.347277, 0.214629],
+                 width=640,
+                 height=480,
+-                fov=1.5,  # ignored if intrinsic is passed
+-                near=0.01,
+-                far=10,
+-                intrinsic = np.array([[623.588, 0, 319.501], [0, 623.588, 239.545], [0, 0, 1]])
++                actor_uid="base_link",
++                intrinsic=np.array(
++                    [[623.588, 0, 319.501], [0, 623.588, 239.545], [0, 0, 1]]
++                ),  # logitech C920
+             )
+         ]
+\ No newline at end of file
+--- a/ManiSkill2_real2sim/mani_skill2_real2sim/agents/controllers/pd_ee_pose.py
++++ b/ManiSkill2_real2sim/mani_skill2_real2sim/agents/controllers/pd_ee_pose.py
+@@ -221,9 +221,10 @@
+             else:
+                 raise NotImplementedError(self.config.frame)
+         else:
+             assert self.config.frame == "base", self.config.frame
+             target_pos, target_rot = action[0:3], action[3:6]
+-            target_quat = Rotation.from_rotvec(target_rot).as_quat()[[3, 0, 1, 2]]
++            # Absolute targets carry the rotation as Euler xyz angles.
++            target_quat = Rotation.from_euler('xyz',target_rot).as_quat()[[3, 0, 1, 2]]
+             target_pose = sapien.Pose(target_pos, target_quat)
+ 
+         return target_pose
+--- a/ManiSkill2_real2sim/mani_skill2_real2sim/envs/custom_scenes/base_env.py
++++ b/ManiSkill2_real2sim/mani_skill2_real2sim/envs/custom_scenes/base_env.py
+@@ -279,15 +279,16 @@
+             if self.robot_uid in ['widowx', 'widowx_bridge_dataset_camera_setup']:
+                 qpos = np.array([-0.01840777,  0.0398835,   0.22242722,  -0.00460194,  1.36524296,  0.00153398, 0.037, 0.037])
+             elif self.robot_uid == 'widowx_sink_camera_setup':
+-                qpos = np.array([-0.2600599, -0.12875618, 0.04461369, -0.00652761, 1.7033415, -0.26983038, 0.037,
+-                                 0.037])
++                # Sink setup aligned with the Bridge-dataset one, to match its camera
++                # (agents/configs/widowx/defaults.py).
++                qpos = np.array([-0.01840777,  0.0398835,   0.22242722,  -0.00460194,  1.36524296,  0.00153398, 0.037, 0.037])
+             else:
+                 raise NotImplementedError(self.robot_uid)
+             
+             if self.robot_uid in ['widowx', 'widowx_bridge_dataset_camera_setup']:
+                 robot_init_height = 0.870
+             elif self.robot_uid == 'widowx_sink_camera_setup':
+-                robot_init_height = 0.85
++                robot_init_height = 0.870
+             else:
+                 raise NotImplementedError(self.robot_uid)
+             robot_init_rot_quat = [0, 0, 0, 1]
+@@ -314,7 +315,7 @@
+                 if self.robot_uid in ['widowx', 'widowx_bridge_dataset_camera_setup']:
+                     init_y = 0.028
+                 elif self.robot_uid == 'widowx_sink_camera_setup':
+-                    init_y = 0.070
++                    init_y = 0.028
+             else:
+                 init_x, init_y = 0.0, 0.0
+             robot_init_xyz = [init_x, init_y, robot_init_height]
+--- a/ManiSkill2_real2sim/mani_skill2_real2sim/envs/custom_scenes/open_drawer_in_scene.py
++++ b/ManiSkill2_real2sim/mani_skill2_real2sim/envs/custom_scenes/open_drawer_in_scene.py
+@@ -6,7 +6,7 @@
+ import sapien.core as sapien
+ from mani_skill2_real2sim import ASSET_DIR
+ from mani_skill2_real2sim.utils.registration import register_env
+-from mani_skill2_real2sim.utils.sapien_utils import get_entity_by_name
++from mani_skill2_real2sim.utils.sapien_utils import get_entity_by_name, vectorize_pose
+ from transforms3d.euler import euler2quat
+ 
+ from .base_env import CustomOtherObjectsInSceneEnv, CustomSceneEnv
+@@ -64,6 +64,9 @@
+     #     scene_config.enable_pcm = True
+     #     return scene_config
+ 
++    def _get_obs_extra(self) -> OrderedDict:
++        return OrderedDict(tcp_pose=vectorize_pose(self.tcp.pose))
++
+     def _initialize_agent(self):
+         init_qpos = np.array(
+             [
+--- a/ManiSkill2_real2sim/mani_skill2_real2sim/envs/custom_scenes/put_on_in_scene.py
++++ b/ManiSkill2_real2sim/mani_skill2_real2sim/envs/custom_scenes/put_on_in_scene.py
+@@ -166,7 +166,7 @@
+         ret["robot"] = "widowx"
+         ret["control_freq"] = 5
+         ret["sim_freq"] = 500
+-        ret["control_mode"] = "arm_pd_ee_target_delta_pose_align2_gripper_pd_joint_pos"
++        ret["control_mode"] = "arm_pd_ee_target_base_pose_gripper_pd_joint_pos"
+         ret["scene_name"] = "bridge_table_1_v1"
+         ret["camera_cfgs"] = {"add_segmentation": True}
+         ret["rgb_overlay_path"] = str(
+--- a/ManiSkill2_real2sim/mani_skill2_real2sim/envs/sapien_env.py
++++ b/ManiSkill2_real2sim/mani_skill2_real2sim/envs/sapien_env.py
+@@ -113,7 +113,8 @@
+                     viewer_shader_dir="rt",
+                     rt_samples_per_pixel=32,
+                     rt_max_path_depth=8,
+-                    rt_use_denoiser=True,
++                    # On driver 580 the OptiX denoiser renders black frames.
++                    rt_use_denoiser=False,
+                 )
+             else:
+                 _render_config = dict(
+--- a/simpler_env/__init__.py
++++ b/simpler_env/__init__.py
+@@ -72,8 +72,9 @@
+ 
+ 
+ def make(task_name, **kwargs):
+-    """Creates simulated eval environment from task name."""
+-    assert task_name in ENVIRONMENTS, f"Task {task_name} is not supported. Environments: \n {ENVIRONMENTS}"
++    """Creates simulated eval environment from task name, or from a registered env id."""
++    if task_name not in ENVIRONMENTS:
++        return gym.make(task_name, obs_mode="rgbd", **kwargs)
+     env_name, env_kwargs = ENVIRONMENT_MAP[task_name]
+     
+     env_kwargs["obs_mode"] = "rgbd",
+--- a/simpler_env/utils/env/env_builder.py
++++ b/simpler_env/utils/env/env_builder.py
+@@ -23,7 +23,7 @@
+             "arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner"
+         )
+     elif "widowx" in robot_name:
+-        control_mode = "arm_pd_ee_target_delta_pose_align2_gripper_pd_joint_pos"
++        control_mode = "arm_pd_ee_target_base_pose_gripper_pd_joint_pos"
+         # control_mode = 'arm_pd_ee_delta_pose_align2_gripper_pd_joint_pos'
+     else:
+         raise NotImplementedError()

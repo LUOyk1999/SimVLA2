@@ -1,0 +1,136 @@
+{
+  "_comment": "Language augmentation map for Bridge V2 training. Keys are original instructions from the dataset, values are lists of paraphrase variants. During training, one variant is randomly sampled to replace the original instruction.",
+
+  "put carrot on plate": [
+    "put carrot on plate",
+    "put the carrot on the plate",
+    "place carrot on plate",
+    "place the carrot on the plate",
+    "put the carrot onto the plate"
+  ],
+  "put eggplant on plate": [
+    "put eggplant on plate",
+    "put the eggplant on the plate",
+    "place eggplant on plate",
+    "put the eggplant onto the plate"
+  ],
+  "put eggplant into pan": [
+    "put eggplant into pan",
+    "put the eggplant into the pan",
+    "put eggplant in pan",
+    "put the eggplant in the pan",
+    "put the eggplant into the basket",
+    "put the eggplant in the basket",
+    "put eggplant in basket",
+    "put the eggplant into the bowl",
+    "put eggplant in bowl"
+  ],
+  "put eggplant in pot or pan": [
+    "put eggplant in pot or pan",
+    "put the eggplant in the pot",
+    "put the eggplant into the pot",
+    "put eggplant in pot",
+    "put the eggplant into the basket",
+    "put the eggplant in the basket"
+  ],
+  "put the green block on top of the yellow block": [
+    "put the green block on top of the yellow block",
+    "put the green object on top of the yellow object",
+    "put the green cube on top of the yellow cube",
+    "put green block on top of yellow block",
+    "place the green block on top of the yellow block",
+    "stack the green block on the yellow block"
+  ],
+  "put the green cube on top of the yellow cube": [
+    "put the green cube on top of the yellow cube",
+    "put the green object on top of the yellow object",
+    "put the green block on top of the yellow block",
+    "put green cube on top of yellow cube",
+    "stack the green cube on the yellow cube",
+    "place the green cube on the yellow cube"
+  ],
+  "put the green cube on top of the yellow block": [
+    "put the green cube on top of the yellow block",
+    "put the green object on top of the yellow object",
+    "put green cube on yellow block",
+    "stack the green object on the yellow object"
+  ],
+  "put the green rectangle on top of the yellow rectangle": [
+    "put the green rectangle on top of the yellow rectangle",
+    "put the green object on top of the yellow object",
+    "stack the green object on the yellow object"
+  ],
+  "put a green box on the top of a yellow box": [
+    "put a green box on the top of a yellow box",
+    "put the green object on top of the yellow object",
+    "stack the green box on the yellow box"
+  ],
+  "put the spoon on the towel": [
+    "put the spoon on the towel",
+    "put spoon on towel",
+    "place the spoon on the towel",
+    "place spoon on towel"
+  ],
+  "open the drawer": [
+    "open the drawer",
+    "open drawer"
+  ],
+  "close the drawer": [
+    "close the drawer",
+    "close drawer"
+  ],
+  "put the ball in the cup": [
+    "put the ball in the cup",
+    "put ball in cup",
+    "place the ball in the cup",
+    "put the ball into the cup"
+  ],
+  "put spoon in pot": [
+    "put spoon in pot",
+    "put the spoon in the pot",
+    "place spoon in pot",
+    "put the spoon into the pot"
+  ],
+  "put broccoli in pot": [
+    "put broccoli in pot",
+    "put the broccoli in the pot",
+    "put the broccoli into the pot",
+    "place broccoli in pot"
+  ],
+  "put corn into bowl": [
+    "put corn into bowl",
+    "put the corn into the bowl",
+    "put corn in bowl",
+    "put the corn in the bowl",
+    "place corn in bowl"
+  ],
+  "put potato on plate": [
+    "put potato on plate",
+    "put the potato on the plate",
+    "place potato on plate",
+    "place the potato on the plate"
+  ],
+  "put sushi on plate": [
+    "put sushi on plate",
+    "put the sushi on the plate",
+    "place sushi on plate",
+    "place the sushi on the plate"
+  ],
+  "put banana on plate": [
+    "put banana on plate",
+    "put the banana on the plate",
+    "place banana on plate"
+  ],
+  "put pear in bowl": [
+    "put pear in bowl",
+    "put the pear in the bowl",
+    "put the pear into the bowl",
+    "place pear in bowl"
+  ],
+  "put carrot in bowl": [
+    "put carrot in bowl",
+    "put the carrot in the bowl",
+    "put the carrot into the bowl",
+    "place carrot in bowl"
+  ]
+}

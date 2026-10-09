@@ -1,0 +1,33 @@
+# SimVLA2 training / server env (installed on top of PyTorch, see README).
+# Version bounds validated on Python 3.11 + CUDA 12.4 (torch 2.6.0+cu124).
+
+# Model stack
+transformers>=4.51,<4.60
+accelerate>=1.2,<2.0
+safetensors>=0.4
+
+# Numerics / storage
+numpy>=1.24
+scipy>=1.10
+h5py>=3.9
+mmengine>=0.10,<1.0
+
+# Image decoding
+Pillow>=10.0
+opencv-python-headless>=4.9
+
+# Serving (the per-benchmark websocket servers under evaluation/*/)
+websockets>=15
+msgpack>=1.0
+msgpack-numpy>=0.4
+
+# Optional logging (train_simvla2.py falls back gracefully if missing)
+wandb>=0.16
+tensorboard>=2.15
+
+# Attention / perf (install after torch is in place; must match torch CUDA build):
+# flash-attn>=2.5
+#
+# RLDS-only extras (Bridge / Fractal training via RLDS; datasets/domain_handler/{bridge,fractal}_rlds.py):
+# tensorflow-cpu>=2.15,<3.0
+# tensorflow_datasets
